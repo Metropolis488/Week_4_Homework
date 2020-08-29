@@ -56,6 +56,7 @@
         startButton.classList.add("hide");
         questionContainer.classList.remove("hide");
         highScoreList.classList.add("hide");
+        highScoreBtn.classList.add("hide");
         
         startTimer();
         setQuestion();
@@ -166,13 +167,17 @@
     
     function viewHS() {
         var storedScores = JSON.parse(localStorage.getItem("highScore"));
+        if (Array.isArray(storedScores)) {
         highScoreList.classList.remove("hide");
         highScoreBtn.classList.add("hide");
         storedScores.forEach(element => {
             let newElement = document.createElement("li");
             newElement.textContent = element.player + " - " + element.finalScore;
             highScoreList.appendChild(newElement);
-        })
+            })
+        } else {
+            alert("No scores on file.  Click START to begin.")
+        }
     };
     
     clearBtn.addEventListener("click", () => {
