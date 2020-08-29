@@ -5,6 +5,12 @@
     var questionContainer = document.getElementById("question-container");
     var response = document.getElementById("response");
     var displayScore = document.getElementById("score");
+    var input = document.getElementById("input");
+    var userName = document.getElementById("uName");
+    var submit = document.getElementById("submit");
+    var highScoreBtn = document.getElementById("highScoreBtn");
+    var highScoreList = document.getElementById("highScoreList");
+    var clearBtn = document.getElementById("clear");
 
     var questionIteration = 0;
     var totalSeconds = 30;
@@ -49,17 +55,20 @@
     function startGame() {
         startButton.classList.add("hide");
         questionContainer.classList.remove("hide");
+        highScoreList.classList.add("hide");
         
         startTimer();
         setQuestion();
     }
-
+    
     function startTimer() {
         intervalId = setInterval(function () {
             totalSeconds--;
             secondsDisplay.textContent = totalSeconds
             if (totalSeconds <= 0) {
                 clearInterval(intervalId);
+                userLog();
+                questionContainer.classList.add("hide");
             } else if (questionIteration === questionLists.length) {
                 clearInterval(intervalId);
             }
@@ -71,23 +80,23 @@
     function setQuestion() {
         var currentQ = questionLists[questionIteration];
         questionDisplay.textContent = currentQ.question;
-
+        
         answerBtns.innerHTML = "";
         for (var i = 0; i < currentQ.answer.length; i++) {
             var btn = document.createElement('button')
             btn.textContent = currentQ.answer[i];
             btn.classList.add("btn")
             btn.addEventListener("click", selectAnswer)
-
+            
             answerBtns.appendChild(btn)
-        }
+        }        
     }
-
+    
     function selectAnswer() {
         var selected = this.textContent;
         var correct = questionLists[questionIteration].correct        
         var displayResponse;
-
+        
         if (selected === correct) {
             console.log("YES!")
             scoreTracker();
@@ -96,9 +105,9 @@
             console.log("nope");
             displayResponse = false;
         }
-
+        
         questionIteration++;
-
+        
         if (questionIteration < questionLists.length) {
             setQuestion();
         } else {
@@ -121,6 +130,9 @@
             response.classList.remove("hide");
             totalSeconds = totalSeconds - 5;
         }
+        if (questionIteration === questionLists.length) {
+            userLog();
+        }
     }
     
     function scoreTracker() {
@@ -129,5 +141,45 @@
     }
 
     function userLog() {
-        //function to log high scores and users - store in local storage
+        input.classList.remove("hide");
     }
+    
+    submit.addEventListener("click", storeHighScore);
+    
+    function storeHighScore () { 
+        var oldArray = JSON.parse(localStorage.getItem("highScore"));
+        if (Array.isArray(oldArray)) {      
+            oldArray.push({
+                player: userName.value.trim(),
+                finalScore: score
+            });
+            localStorage.setItem("highScore", JSON.stringify(oldArray));        
+        } else {
+            var newArray = [];
+            newArray.push({player: userName.value.trim(),
+            finalScore: score});
+            localStorage.setItem("highScore", JSON.stringify(
+            newArray))
+        }
+    }
+    highScoreBtn.addEventListener("click", viewHS);
+    
+    function viewHS() {
+        var storedScores = JSON.parse(localStorage.getItem("highScore"));
+        highScoreList.classList.remove("hide");
+        highScoreBtn.classList.add("hide");
+        storedScores.forEach(element => {
+            let newElement = document.createElement("li");
+            newElement.textContent = element.player + " - " + element.finalScore;
+            highScoreList.appendChild(newElement);
+        })
+    };
+    
+    clearBtn.addEventListener("click", () => {
+        var oldArray = JSON.parse(localStorage.getItem("highScore"));
+        if (Array.isArray(oldArray)) {      
+            localStorage.clear();
+        } else {
+            alert("No scores on file.  Click OK to begin.")
+        }
+    });
